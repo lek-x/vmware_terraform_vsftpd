@@ -1,0 +1,49 @@
+- name: Install vsftpd
+  apt:
+    name: vsftpd
+    state: present
+  tags:
+    - install_vsftpd
+- name: Template config
+  template:
+    src: 'vsftpd.conf.j2'
+    dest: /etc/vsftpd.conf
+    owner: root
+    group: root
+  tags:
+    - install_vsftpd  
+#- name: Generate a Self Signed OpenSSL certificate
+#  openssl_privatekey:
+#    path: /etc/ssl/private/vsftpd2.pem
+#    size: 2048
+#    type: RSA
+#    state: present
+#  tags:
+#    - install_vsftpd
+- name: Copy Self Signed OpenSSL certificate
+  copy:
+    src: files/vsftpd.pem
+    dest: /etc/ssl/vsftpd.pem
+    owner: root
+    group: root
+    mode: '0600'
+  tags:
+   - install_vsftpd  
+- name: Writting access list
+  lineinfile:
+    path: /etc/vsftpd.userlist
+    line: ftpuser
+    state: present
+    insertafter: EOF
+- name: Enable vsftpd
+  systemd: 
+    name: vsftpd
+    enabled: yes
+  tags:
+    - install_vsftpd    
+- name: Enable vsftpd
+  systemd: 
+    name: vsftpd
+    state: started
+  tags:
+    - install_vsftpd

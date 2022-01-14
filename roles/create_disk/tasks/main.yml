@@ -1,0 +1,77 @@
+- name: Create a new logical partition for LVM
+  parted:
+    device: "/dev/sda"
+    number: 2
+    part_type: logical
+    flags: [ lvm ]
+    state: present
+    align: optimal
+    label: gpt
+  tags:
+    - create_lvm
+  run_once: true  
+- name: Create LVM group
+  lvg:
+    vg: ftp
+    pvs: /dev/sda1
+  tags:
+  - create_lvm
+  run_once: true
+- name: Add to group
+  lvg:
+    vg: ftp
+    pvs: "/dev/sda1"
+  tags:
+    - create_lvm
+  run_once: true
+- name: Create LVOL
+  lvol:
+    vg: ftp
+    lv: ftp_vol
+    size: 100%FREE
+  tags:
+    - create_lvm
+  run_once: true  
+- name: Create a ext4 filesystem on /dev/ftp/ftp_vol
+  filesystem:
+    fstype: ext4
+    dev: /dev/ftp/ftp_vol
+  tags:
+    - mount
+  run_once: true  
+- name: Create dir for mount
+  file:
+    path: /mnt/ftp
+    state: directory
+  tags:
+    - mount 
+  run_once: true  
+- name: Get UUID of /dev/sda1
+  shell: blkid  /dev/ftp/ftp_vol -s UUID -o value
+  register: UUID
+  tags:
+    - mount_debug
+- name: Mount up device by UUID
+  mount:
+    path: /mnt/ftp
+    src: "UUID={{ UUID.stdout }}"
+    fstype: ext4
+    opts: noatime
+    state: present
+  tags:
+    - mount_debug
+- name: Grant permission for dir
+  file:
+    path: /mnt/ftp/ftpuser 
+    owner: ftpuser
+    group: ftpuser
+    mode: '0700'
+    state: directory
+  tags:
+    - mount_debug2 
+#- name: Get UUID of /dev/sda1
+#  debug: 
+#    msg: "{{ UUID.stdout }}"
+#  tags:
+#    - mount_debug
+

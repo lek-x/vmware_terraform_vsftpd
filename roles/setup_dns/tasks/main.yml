@@ -1,0 +1,31 @@
+- name: Setting up DNS nameserver
+  lineinfile:
+    path: /etc/resolv.conf
+    line: nameserver 8.8.8.8
+    state: present
+    insertafter: EOF
+- name: Update apt cache
+  apt:
+    update_cache: yes
+- name: Install resolvconf
+  apt:
+    name: resolvconf
+    state: present
+- name: Setting up persistent name server
+  lineinfile:
+    path: /etc/resolvconf/resolv.conf.d/head
+    line: nameserver 8.8.8.8
+    state: present
+    insertafter: EOF
+- name: Enable resolvconf
+  systemd: 
+    name: resolvconf
+    enabled: yes
+- name: Enable resolvconf
+  systemd: 
+    name: resolvconf
+    state: started
+- name: Reboot VM
+  reboot:
+    reboot_timeout: 30
+    

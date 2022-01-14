@@ -1,0 +1,22 @@
+- name: "Setting up ftp"
+  hosts: monitoring
+  gather_facts: yes
+  become: true
+  vars_prompt:
+    - name: "user_password"    
+      prompt: "Enter a password for the ftpuser"    
+      private: no    
+      confirm: yes
+      encrypt: sha512_crypt
+      salt_size: 7     
+  tasks:
+    - name: Checking yor hash
+      debug:
+        msg: "{{ user_password }}" 
+  roles:
+    - setup_dns
+    - update_system
+    - create_users
+    - create_disk
+    - install_vsftpd    
+    - sending_keys

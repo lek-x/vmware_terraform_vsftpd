@@ -1,0 +1,20 @@
+#- name: Print a message2
+#  debug:
+#    msg: "{{ user_password }}"  
+- name: Create ftpuser group
+  group:
+    name: ftpuser
+    state: present
+  tags:
+    - users  
+- name: Create ftpuser
+  user: 
+    name: ftpuser
+    password: "{{ user_password }}"
+    group: ftpuser
+    state: present
+    home: /mnt/ftp/ftpuser
+    update_password: always
+    shell: /bin/bash
+  tags:
+    - users

@@ -1,0 +1,53 @@
+# Update system  Ubuntu
+#
+#- name: Copy sshd config
+#  copy:
+#    src: "/etc/ssh/{{ item }}"
+#    dest: "/home/{{ item }}"
+#    remote_src: yes
+#    force: yes
+#  with_items:
+#    - sshd_config
+#    - ssh_config
+#  tags:
+#    - ssh_config  
+- name: Copy sshd config
+  shell:
+    cmd: " cp -f sshd_config ssh_config /root/ "
+    chdir: /etc/ssh
+  tags:
+    - ssh_config  
+- name: Update the repository cache [Common, Debian family]
+  apt:
+    force_apt_get: true
+    update_cache: yes
+  tags:
+    - update_system
+- name: Update  packages [Common, Debian family]
+  apt:
+    name: "*"
+    state: latest
+  tags:
+    - update_system
+    
+- name: Remove Apache2
+  apt:
+    name: apache2
+    state: absent 
+- name: Upgrade System packages [Common, Debian family]
+  apt:
+    force_apt_get: true
+    upgrade: dist
+  tags:
+    - update_system
+    
+- name: Install python3-apt
+  apt:
+    name: python3-apt
+    state: present
+- name: Copy back sshd config
+  shell:
+    cmd: " cp -f sshd_config ssh_config /etc/ssh "
+    chdir: /root/
+  tags:
+    - ssh_config 
